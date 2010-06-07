@@ -1,0 +1,165 @@
+<!DOCTYPE html> 
+<html lang="en-US"> 
+<head>
+	<title>{{ list.owner.nickname }}&rsquo;s tasks.</title>
+	<link rel="stylesheet" href="/goods/css/blank.css" media="all" type="text/css" />
+	<style type="text/css" media="all">
+	{% if list.styles %}{{ list.styles }}{% endif %}
+	</style>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+<div id="wrapper" class="container clearfix">
+
+	<div class="clearfix">
+		<h1 style="font-size:0.75em;" class="left">{{ list.owner.nickname }}&rsquo;s tasks.</h1>
+		<form name="newtask" id="newtask" action="" method="post" class="right">
+			<input type="hidden" name="newtask" value="true"><input type="submit" value="New Task">
+		</form>
+	</div>
+        
+	<ol id="sortable" class="tasks clearfix">
+
+	</ol>
+    
+    <p><small>&mdash;<a href="/" title="Task Thing Homepage">Task Thing</a> by 
+    <a href="http://staydecent.ca" title="Staydecent, design &amp; development">Adrian Unger</a>.</small></p>
+
+</div>
+
+<div id="loading" style="position:absolute;z-index:999;width:16px;height:16px;"><img src="/goods/gif/loader.gif" alt="Loading"></div>
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    get_tasks();
+    // new task
+    $('#newtask').live('submit',function() {
+        var e = $(this);
+        $.ajax({
+            type   : 'POST',
+            url    : '/new/{{ list.owner.user_id }}',
+            data   : e.serialize(),
+            success: function(data,msg,xhr) { get_tasks(); }
+        });
+        return false;
+    });
+    // inline editing!
+    $('.item:not(.complete) span').live('dblclick',function() {
+        var elm = $(this);
+        var cls = elm.attr('class');
+        var htm = elm.html();
+        var txt = elm.text();
+        var key = elm.parent().attr('id') || elm.parent().parent().attr('id');
+        elm.html('<form name="task" action="" method="post"><input class="inline" name="'+cls+'" type="text" value="'+txt+'"><input type="hidden" name="key" value="'+key+'"></form>');
+        // Attach handler manually, since form is added after jQuery binds its triggers /via @lzimm
+        elm.children("form").bind('submit focusout', function() {
+        	var e = $(this);
+            if (e == '') { alert('Field cannot be empty.'); elm.html(txt); }
+            else {
+    	        $.ajax({
+    	            type   : 'POST',
+    	            url    : '/edit/{{ list.owner.user_id }}',
+    	            data   : e.serialize(),
+    	            success: function(data,msg,xhr) { e.text(data); }
+    	        });
+            }
+	        return false;
+        });
+        elm.children().children("input[name='"+cls+"']").focus();
+        elm.children().children().blur(function() { elm.html(txt); });
+    });
+
+    $('form').live('submit',function() {
+		var e = $(this);
+        $.ajax({
+            type    : 'POST',
+            url     : '/u/{{ list.owner.user_id }}',
+            data    : e.serialize(),
+            success : function(data,msg,xhr) {
+                if (data) { e.append('<small style="display:none;color:#3a3;">'+data+'<small>'); }
+                else { e.append('<small style="display:none;color:#f33;">Failed.<small>'); }
+                e.children('small').fadeIn(50).delay(1000).fadeOut(500);
+            }
+        });
+        e.children('small').remove();
+        return false;
+    });
+    
+    // mark done or delete
+    $('#complete').live('click',function() {
+        var elm = $(this);
+        var key = elm.parent().attr('id');
+        var complete = 'complete';
+        if (elm.parent().hasClass('complete')) complete = 'incomplete';
+
+        $.ajax({
+            type   : 'POST',
+            url    : '/edit/{{ list.owner.user_id }}',
+            data   : ({complete : complete, key : key}),
+            success: function(data,msg,xhr) { get_tasks(); }
+        });
+        return false;
+    });
+    $('#remove').live('click',function() {
+        var elm = $(this);
+        var key = elm.parent().attr('id');
+
+        $.ajax({
+            type   : 'POST',
+            url    : '/edit/{{ list.owner.user_id }}',
+            data   : ({remove : 'true', key : key}),
+            success: function(data,msg,xhr) { get_tasks(); }
+        });
+        return false;
+    });
+    
+    $(".item:not(.complete)").live('mouseenter', function() {
+        $(this).children("div:hidden").slideDown(150);
+    });
+    $(".item:not(.complete)").live('mouseleave', function() {
+        $(this).children("div").slideUp(50);
+    });
+    
+    // loading
+    $("#loading").css({
+        left    : (($(window).width() - 32)/2),
+        top     : (($(window).height() - 32)/2)
+    });
+});
+var get_tasks = function() {
+    $.ajax({
+        type    : 'GET',
+        url     : '/tasks/{{ list.owner.user_id }}',
+        success : function(data,msg,xhr) { 
+            $('#sortable').html(data);
+            // let em know!
+            $("#loading").ajaxStart(function(){ $(this).fadeIn(0); });
+            $("#loading").ajaxStop(function(){ $(this).fadeOut(500); });
+            $(".item:first").addClass('first');
+            // sort that shit
+            $("#sortable").sortable({
+                start: function(event,ui) { $(ui.item).addClass('active'); },
+                stop : function(event,ui) {
+                    $(ui.item).removeClass('active');
+                    var sortkeys = [];
+                    $("#sortable .item").each(function(i) { sortkeys.push($(this).attr('id')); });
+                    $.ajax({
+                        type    : 'POST',
+                        url     : '/edit/{{ list.owner.user_id }}',
+                        data    : { priority: sortkeys },
+                        success : function(data,msg,xhr) { }
+                    });
+                    $('.item').removeClass('first');
+                    $('.item:first').addClass('first');
+                }
+            });
+            $("#sortable").disableSelection();
+            $(".item.complete").css({opacity:0.5});
+        }
+    });
+};
+</script>
+</body>
+</html>

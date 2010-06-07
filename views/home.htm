@@ -1,0 +1,31 @@
+{% extends "base.htm" %}
+
+{% block content %}
+
+	<div class="clearfix">
+	
+		<div id="screen"></div>
+		
+		
+		<div class="left" style="width:55%;">
+			<p>I have tried many to-do <span class="serif">&amp;</span> task list solutions out there. But have found them all to be overly complicated, abstracted or metaphorized. This Task Thing is simple. With the focus on the tasks themselves, I have tried to eliminate any sort of interface while retaining some useful features.</p>
+		</div>
+		
+		<ul class="right">
+			<li>&mdash; Inline editing, just double click</li>
+			<li>&mdash; Drag <span class="serif">&amp;</span> drop ordering</li>
+			<li>&mdash; One click to add a new task</li>
+			<li>&mdash; One click to mark a task done</li>
+			<li>&mdash; One click to delete a task</li>
+			<li>&mdash; Throw in your own CSS styles*</li>
+			<li><small>* Sorry this is not available yet, suckas!</small></li>
+		</ul>
+		
+	
+	</div>
+	
+	<div class="clearfix">{{ action }}</div>	
+	
+	<p style="background:#fffbd7;padding:1em;font-size:0.8em;line-height:1.4em;">NOTE: You may experience some bugs in Firefox(3.5.9)! Currently, I can only gurantee full functionality in Chrome(4.1.xxx). Please report any bugs by <a href="mailto:bugs&#64;staydecent.ca" title="Email me bugs">email</a> or by <a href="http://twitter.com/home?status=Hey%20@staydecent%20I%20found%20a%20bug%20in%20Task%20Thing!" title="Mention bugs on Twitter">Twitter</a>!</p>
+
+{% endblock %}

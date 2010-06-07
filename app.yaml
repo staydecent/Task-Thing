@@ -1,0 +1,35 @@
+application: taskthing
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /goods
+  static_dir: goods
+
+- url: /admin/.*
+  script: logic/admin.py
+  login: admin
+
+- url: /create
+  script: logic/list.py
+  login: required
+
+- url: /tasks/.*
+  script: logic/list.py
+  login: required
+
+- url: /u/.*
+  script: logic/list.py
+  login: required
+
+- url: /edit/.*
+  script: logic/task.py
+  login: required
+
+- url: /new/.*
+  script: logic/task.py
+  login: required
+
+- url: .*
+  script: main.py

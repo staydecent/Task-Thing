@@ -1,0 +1,25 @@
+	{% for task in tasks %}
+		{% if not task.complete %}
+		<li class="clearfix item" id="{{ task.key }}">
+			<div id="remove" class="right" style="display:none;" title="Remove task.">X</div>
+			<div id="complete" class="right" style="display:none;" title="Mark task as complete.">&#10004;</div>
+			<span class="title">{{ task.title }}</span>
+			<div class="left" style="display:none;width:90%;">
+				<span class="description">{% if not task.description %}Give this task a description?{% else %}{{ task.description }}{% endif %}</span>
+			</div>
+		</li>
+		{% endif %}
+	{% endfor %}
+	
+	{% for task in tasks %}
+		{% if task.complete %}
+		<li class="clearfix item complete" id="{{ task.key }}">
+			<div id="remove" class="right" title="Remove task.">X</div>
+			<div id="complete" class="right" title="Mark task as incomplete.">&#10004;</div>
+			<span class="title">{{ task.title }}</span>
+			<div class="left" style="display:none;width:90%;">
+				<span class="description">{% if not task.description %}Give this task a description?{% else %}{{ task.description }}{% endif %}</span>
+			</div>
+		</li>
+		{% endif %}
+	{% endfor %}
